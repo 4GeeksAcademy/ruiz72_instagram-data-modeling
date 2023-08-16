@@ -7,41 +7,45 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class User(Base):
-    __tablename__ = 'user'
-    UserID = Column(Integer, primary_key=True)
-    Username = Column(String(50))
+class Usuario(Base):
+    __tablename__ = 'usuario'
+    UsuarioID = Column(Integer, primary_key=True)
+    NombreUsuario = Column(String(100))
     Email = Column(String(100))
-    FullName = Column(String(100))
-    Bio = Column(String(250))
-    ProfileImage = Column(String(250))
+    NombreCompleto = Column(String(100))
+    Biografia = Column(String(250))
+    ImagenPerfil = Column(String(250))
+    publicaciones = relationship('Publicacion', back_populates='usuario')
+    comentarios = relationship('Comentario', back_populates='usuario')
+    seguidores = relationship('Seguir', foreign_keys='Seguir.SiguiendoID', back_populates='siguiendo')
+    siguiendo = relationship('Seguir', foreign_keys='Seguir.SeguidorID', back_populates='seguidor')
 
-class Post(Base):
-    __tablename__ = 'post'
-    PostID = Column(Integer, primary_key=True)
-    UserID = Column(Integer, ForeignKey('user.UserID'))
-    Image = Column(String(250))
-    Caption = Column(String(250))
-    Likes = Column(Integer)
-    Comments = Column(Integer)
+class Publicacion(Base):
+    __tablename__ = 'publicacion'
+    PublicacionID = Column(Integer, primary_key=True)
+    UsuarioID = Column(Integer, ForeignKey('usuario.UsuarioID'))
+    Imagen = Column(String(250))
+    Descripcion = Column(String(250))
+    MeGusta = Column(Integer)
+    Comentarios = Column(Integer)
+    usuario = relationship('Usuario', back_populates='publicaciones')
+    comentarios = relationship('Comentario', back_populates='publicacion')
 
-class Comment(Base):
-    __tablename__ = 'comment'
-    CommentID = Column(Integer, primary_key=True)
-    PostID = Column(Integer, ForeignKey('post.PostID'))
-    UserID = Column(Integer, ForeignKey('user.UserID'))
-    Text = Column(String(250))
+class Comentario(Base):
+    __tablename__ = 'comentario'
+    ComentarioID = Column(Integer, primary_key=True)
+    PublicacionID = Column(Integer, ForeignKey('publicacion.PublicacionID'))
+    UsuarioID = Column(Integer, ForeignKey('usuario.UsuarioID'))
+    Texto = Column(String(250))
+    usuario = relationship('Usuario', back_populates='comentarios')
+    publicacion = relationship('Publicacion', back_populates='comentarios')
 
-class Follow(Base):
-    __tablename__ = 'follow'
-    FollowerID = Column(Integer, primary_key=True)
-    FollowingID = Column(Integer, ForeignKey('user.UserID'))
-
-class Like(Base):
-    __tablename__ = 'like'
-    LikeID = Column(Integer, primary_key=True)
-    PostID = Column(Integer, ForeignKey('post.PostID'))
-    UserID = Column(Integer, ForeignKey('user.UserID'))
+class Seguir(Base):
+    __tablename__ = 'seguir'
+    SeguidorID = Column(Integer, primary_key=True)
+    SiguiendoID = Column(Integer, ForeignKey('usuario.UsuarioID'))
+    seguidor = relationship('Usuario', foreign_keys=[SeguidorID], back_populates='seguidores')
+    siguiendo = relationship('Usuario', foreign_keys=[SiguiendoID], back_populates='siguiendo')
 
     def to_dict(self):
         return {}
